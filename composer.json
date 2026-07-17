@@ -49,5 +49,5 @@
         "larastan/larastan": "*",
         "laravel/pint": "^1.0",
         "orchestra/testbench": "^9.0"
-    },
+    }
 }
