@@ -18,7 +18,7 @@ Installation (PHP)
 Require via Composer:
 
 ```bash
-composer require dcodegroup/form-builder
+composer require dcodegroup/laravel-form-builder
 ```
 
 The package registers the service provider automatically via Composer's extra.laravel.providers. This package does not publish frontend assets. For frontend integration, install and import the companion npm package @dcodegroup-au/form-builder into your frontend build, or copy the compiled assets from node_modules into your public assets as part of your build pipeline.
