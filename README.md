@@ -1,93 +1,103 @@
-# :package_description
+# Laravel Form Builder
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-<!--delete-->
----
-This repo can be used to scaffold a Laravel package. Follow these steps to get started:
+A lightweight Laravel package that helps manage server-side form building and integrates with a frontend form renderer.
 
-1. Press the "Use this template" button at the top of this repo to create a new repo with the contents of this skeleton.
-2. Run "php ./configure.php" to run a script that will replace all placeholders throughout all the files.
-3. Have fun creating your package.
-4. If you need help creating a package, consider picking up our <a href="https://laravelpackage.training">Laravel Package Training</a> video course.
----
-<!--/delete-->
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+This package provides server-side helpers, published assets, and a Laravel service provider. For frontend components and form rendering, use the companion npm package:
 
-## Support us
+- npm: https://www.npmjs.com/package/@dcodegroup-au/form-builder
+- package name: @dcodegroup-au/form-builder
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/:package_name.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/:package_name)
+Features
 
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
+- Laravel service provider to integrate form-builder features into your app
+- Publishable frontend assets (JS/CSS) to integrate with your application frontend
+- Designed to work with the @dcodegroup-au/form-builder npm package for rendering and interactivity
 
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+Installation (PHP)
 
-## Installation
-
-You can install the package via composer:
+Require via Composer:
 
 ```bash
-composer require :vendor_slug/:package_slug
+composer require dcodegroup/form-builder
 ```
 
-You can publish and run the migrations with:
+The package registers the service provider automatically via Composer's extra.laravel.providers. This package does not publish frontend assets. For frontend integration, install and import the companion npm package @dcodegroup-au/form-builder into your frontend build, or copy the compiled assets from node_modules into your public assets as part of your build pipeline.
+
+Frontend integration (npm)
+
+Install the frontend package into your JS project:
 
 ```bash
-php artisan vendor:publish --tag=":package_slug-migrations"
-php artisan migrate
+# npm
+npm install @dcodegroup-au/form-builder --save
+
+# or yarn
+yarn add @dcodegroup-au/form-builder
 ```
 
-You can publish the config file with:
+Then import the library and styles in your entry file (Vite, Webpack, Mix, etc.):
 
-```bash
-php artisan vendor:publish --tag=":package_slug-config"
+```js
+import '@dcodegroup-au/form-builder/dist/form-builder.css';
+import FormBuilder from '@dcodegroup-au/form-builder';
+
+// initialize or mount components per the npm package docs
 ```
 
-This is the contents of the published config file:
+Alternatively, include compiled assets produced by your frontend build in Blade templates. Choose the approach that matches your stack:
 
-```php
-return [
-];
+- Vite (Laravel + Vite): import the package in your resources/js entry and let Vite handle bundling and HMR.
+
+```js
+// resources/js/app.js
+import '@dcodegroup-au/form-builder/dist/form-builder.css';
+import FormBuilder from '@dcodegroup-au/form-builder';
 ```
 
-Optionally, you can publish the views using
+Then load the compiled entry in Blade:
 
-```bash
-php artisan vendor:publish --tag=":package_slug-views"
+```blade
+@vite(['resources/js/app.js'])
 ```
 
-## Usage
+- Laravel Mix / Webpack: copy or require the dist files from node_modules in webpack.mix.js:
 
-```php
-$variable = new VendorName\Skeleton();
-echo $variable->echoPhrase('Hello, VendorName!');
+```js
+mix.js('resources/js/app.js', 'public/js')
+   .copy('node_modules/@dcodegroup-au/form-builder/dist/form-builder.js', 'public/js/vendor/form-builder.js')
+   .copy('node_modules/@dcodegroup-au/form-builder/dist/form-builder.css', 'public/css/vendor/form-builder.css');
 ```
 
-## Testing
+Then include with mix():
+
+```blade
+<link rel="stylesheet" href="{{ mix('css/vendor/form-builder.css') }}">
+<script src="{{ mix('js/vendor/form-builder.js') }}" defer></script>
+```
+
+Adjust paths to match your build output and deployment conventions.
+
+Usage
+
+
+
+- Use the Laravel helpers and service provider for preparing form data on the server side.
+- Use the frontend npm package to render forms, handle client-side validation, and submit data asynchronously.
+
+Refer to the npm package documentation for frontend component usage: https://www.npmjs.com/package/@dcodegroup-au/form-builder
+
+Testing
+
+Run package tests (if provided):
 
 ```bash
 composer test
 ```
 
-## Changelog
+Contributing
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+Contributions are welcome. Please open issues or pull requests and follow repository conventions.
 
-## Contributing
+License
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
-
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
-## Credits
-
-- [:author_name](https://github.com/:author_username)
-- [All Contributors](../../contributors)
-
-## License
-
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+MIT — see LICENSE.md for details.
