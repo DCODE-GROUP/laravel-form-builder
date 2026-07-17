@@ -1,5 +1,5 @@
 {
-    "name": "dcodegroup/form-builder",
+    "name": "dcodegroup/laravel-form-builder",
     "description": "Simple package which dcode uses to manage form builder",
     "keywords": [
         "laravel",
@@ -49,5 +49,5 @@
         "larastan/larastan": "*",
         "laravel/pint": "^1.0",
         "orchestra/testbench": "^9.0"
-    }
+    },
 }
