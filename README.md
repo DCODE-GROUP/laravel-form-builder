@@ -1,92 +1,130 @@
 # Laravel Form Builder
 
-A lightweight Laravel package that helps manage server-side form building and integrates with a frontend form renderer.
+Drag-and-drop form builder for Laravel + Vue 3. Define form schemas in an admin UI (`FormBuilder`), then render and collect submissions with `VForm`.
 
-This package provides server-side helpers, published assets, and a Laravel service provider. For frontend components and form rendering, use the companion npm package:
+| Package                           | Purpose |
+|-----------------------------------|---------|
+| `dcodegroup/laravel-form-builder` | Laravel models, migrations, validation helpers |
+| `@dcodegroup-au/form-builder`     | Vue components and styles |
 
-- npm: https://www.npmjs.com/package/@dcodegroup-au/form-builder
-- package name: @dcodegroup-au/form-builder
+## Requirements
 
-Features
+- PHP 8.2+
+- Laravel 11, 12, or 13
 
-- Laravel service provider to integrate form-builder features into your app
-- Publishable frontend assets (JS/CSS) to integrate with your application frontend
-- Designed to work with the @dcodegroup-au/form-builder npm package for rendering and interactivity
-
-Installation (PHP)
-
-Require via Composer:
-
+## Installation
+### Backend
 ```bash
 composer require dcodegroup/laravel-form-builder
+php artisan form-builder:install
+php artisan migrate
 ```
 
-The package registers the service provider automatically via Composer's extra.laravel.providers. This package does not publish frontend assets. For frontend integration, install and import the companion npm package @dcodegroup-au/form-builder into your frontend build, or copy the compiled assets from node_modules into your public assets as part of your build pipeline.
+`form-builder:install` publishes the `create_forms_table` and `create_form_data_table` migrations when they are not already present.
 
-Frontend integration (npm)
-
-Install the frontend package into your JS project:
+### Frontend
 
 ```bash
-# npm
-npm install @dcodegroup-au/form-builder --save
-
-# or yarn
-yarn add @dcodegroup-au/form-builder
+npm install @dcodegroup-au/form-builder
 ```
 
-Then import the library and styles in your entry file (Vite, Webpack, Mix, etc.):
+---
 
-```js
-import '@dcodegroup-au/form-builder/dist/form-builder.css';
-import FormBuilder from '@dcodegroup-au/form-builder';
+## Backend quick reference
 
-// initialize or mount components per the npm package docs
+### Backend models & traits
+
+#### `Form`
+
+Stores the form definition (`title`, `recipients`, `status`, `published_at`, `fields`).
+
+```php
+use Dcodegroup\FormBuilder\Models\Form;
+
+$form = Form::saveModel([
+    'title' => 'Onboarding',
+    'status' => 'published',
+    'fields' => $request->input('data.fields'),
+]);
 ```
 
-Alternatively, include compiled assets produced by your frontend build in Blade templates. Choose the approach that matches your stack:
+#### `FormData`
 
-- Vite (Laravel + Vite): import the package in your resources/js entry and let Vite handle bundling and HMR.
+Stores a filled submission (`values`, `completed_at`) morph-linked to any model via `formable`, and related to a `Form`.
 
-```js
-// resources/js/app.js
-import '@dcodegroup-au/form-builder/dist/form-builder.css';
-import FormBuilder from '@dcodegroup-au/form-builder';
+#### `HasFilledForms`
+
+Add to any Eloquent model that can have filled forms:
+
+```php
+use Dcodegroup\FormBuilder\Models\Traits\HasFilledForms;
+
+class Job extends Model
+{
+    use HasFilledForms;
+}
+
+// Latest (or create) submission for a form
+$formData = $job->getFormData($form, createNew: true);
+
+// Persist values
+$job->saveFormData($form, $values);
 ```
 
-Then load the compiled entry in Blade:
+#### `FormValidator`
 
-```blade
-@vite(['resources/js/app.js'])
+Use on a Form Request to build rules from required fields in the schema:
+
+```php
+use Dcodegroup\FormBuilder\Http\Traits\FormValidator;
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreFormSubmissionRequest extends FormRequest
+{
+    use FormValidator;
+
+    public function rules(): array
+    {
+        return $this->getRules([
+            // extra static rules...
+        ]);
+    }
+
+    public function messages(): array
+    {
+        return $this->getRules([], isMessage: true);
+    }
+}
 ```
 
-- Laravel Mix / Webpack: copy or require the dist files from node_modules in webpack.mix.js:
+Rules are derived from `route('form')?->fields` when present, otherwise from `request()->input('data.fields')`.
 
-```js
-mix.js('resources/js/app.js', 'public/js')
-   .copy('node_modules/@dcodegroup-au/form-builder/dist/form-builder.js', 'public/js/vendor/form-builder.js')
-   .copy('node_modules/@dcodegroup-au/form-builder/dist/form-builder.css', 'public/css/vendor/form-builder.css');
-```
+---
 
-Then include with mix():
+## Database
 
-```blade
-<link rel="stylesheet" href="{{ mix('css/vendor/form-builder.css') }}">
-<script src="{{ mix('js/vendor/form-builder.js') }}" defer></script>
-```
+**`forms`**
 
-Adjust paths to match your build output and deployment conventions.
+| Column | Notes |
+|--------|--------|
+| `title` | Form name |
+| `recipients` | JSON (notification emails) |
+| `status` | e.g. draft / published |
+| `published_at` | Set when published |
+| `fields` | JSON schema |
 
-Usage
+**`form_data`**
 
+| Column | Notes |
+|--------|--------|
+| `formable_type` / `formable_id` | Morph to the owning model |
+| `form_id` | Related `forms` row |
+| `values` | JSON answers |
+| `completed_at` | Nullable completion timestamp |
 
+---
 
-- Use the Laravel helpers and service provider for preparing form data on the server side.
-- Use the frontend npm package to render forms, handle client-side validation, and submit data asynchronously.
-
-Refer to the npm package documentation for frontend component usage: https://www.npmjs.com/package/@dcodegroup-au/form-builder
-
-Testing
+## Testing
 
 Run package tests (if provided):
 
@@ -94,10 +132,10 @@ Run package tests (if provided):
 composer test
 ```
 
-Contributing
+## Contributing
 
 Contributions are welcome. Please open issues or pull requests and follow repository conventions.
 
-License
+## License
 
 MIT — see LICENSE.md for details.
